@@ -16,16 +16,13 @@
 
     input, select { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 10px; margin-bottom: 12px; font-size: 15px; }
 
-    button { border: 0; border-radius: 10px; padding: 10px 14px; cursor: pointer; background: #2563eb; color: white; font-weight: bold; }
+    button { border: 0; border-radius: 10px; padding: 10px 14px; cursor: pointer; background: #2563eb; color: white; font-weight: bold; margin: 2px; }
     button:hover { background: #1d4ed8; }
     .btn-gray { background: #6b7280; }
-    .btn-gray:hover { background: #4b5563; }
     .btn-red { background: #dc2626; }
-    .btn-red:hover { background: #b91c1c; }
     .btn-green { background: #16a34a; }
-    .btn-green:hover { background: #15803d; }
     .btn-orange { background: #f59e0b; }
-    .btn-orange:hover { background: #d97706; }
+    .btn-purple { background: #7c3aed; }
 
     .error { color: #dc2626; margin-top: 10px; font-weight: bold; }
     .success { color: #16a34a; margin-top: 10px; font-weight: bold; }
@@ -53,8 +50,8 @@
     .form-grid { display: grid; grid-template-columns: repeat(5, minmax(140px, 1fr)); gap: 10px; align-items: center; }
     .form-grid input, .form-grid select { margin-bottom: 0; }
 
-    table { width: 100%; border-collapse: collapse; background: white; border-radius: 14px; overflow: hidden; min-width: 1100px; }
-    th, td { padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: left; font-size: 14px; }
+    table { width: 100%; border-collapse: collapse; background: white; border-radius: 14px; overflow: hidden; min-width: 1150px; }
+    th, td { padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: left; font-size: 14px; vertical-align: top; }
     th { background: #f9fafb; font-weight: bold; }
 
     .badge { padding: 5px 9px; border-radius: 999px; font-size: 12px; color: white; display: inline-block; font-weight: bold; }
@@ -134,6 +131,8 @@
             <option value="რეზერვ">რეზერვი</option>
             <option value="ელოდება">ელოდება</option>
             <option value="ჩაბარდა">ჩაბარდა</option>
+            <option value="საწყობშია">საწყობშია</option>
+            <option value="გადანახულია">გადანახულია</option>
           </select>
         </div>
         <div id="ordersTableWrap"></div>
@@ -189,6 +188,22 @@
   </div>
 </div>
 
+<div class="modal" id="warehouseModal">
+  <div class="modal-box">
+    <h3>🏬 საწყობის სტატუსი</h3>
+    <p id="warehouseInfo"></p>
+    <select id="warehouseStatusSelect">
+      <option value="საწყობშია">საწყობშია</option>
+      <option value="რეზერვირებულია">რეზერვირებულია</option>
+      <option value="გადანახულია">გადანახულია</option>
+      <option value="გასაცემად მზადაა">გასაცემად მზადაა</option>
+      <option value="გაცემულია">გაცემულია</option>
+    </select>
+    <button onclick="confirmWarehouseStatus()">შენახვა</button>
+    <button class="btn-gray" onclick="closeModal('warehouseModal')">დახურვა</button>
+  </div>
+</div>
+
 <div class="modal" id="codModal">
   <div class="modal-box">
     <h3>💰 COD თანხის დაფიქსირება</h3>
@@ -201,7 +216,7 @@
 
 <div class="modal" id="statusModal">
   <div class="modal-box">
-    <h3>🚚 სტატუსის შეცვლა</h3>
+    <h3>🚚 მიწოდების სტატუსი</h3>
     <select id="deliveryStatusSelect">
       <option value="ელოდება">ელოდება</option>
       <option value="კურიერზე გადაცემულია">კურიერზე გადაცემულია</option>
@@ -289,7 +304,6 @@ function login() {
 function startApp() {
   document.getElementById("loginPage").style.display = "none";
   document.getElementById("app").style.display = "block";
-
   document.getElementById("userInfo").innerText = currentUser.Name + " / " + currentUser.Role;
 
   applyPermissions();
@@ -407,7 +421,8 @@ function getVisibleOrders(searchId, filterId) {
     result = result.filter(o =>
       String(o.PaymentStatus).includes(filter) ||
       String(o.InternalStatus).includes(filter) ||
-      String(o.DeliveryStatus).includes(filter)
+      String(o.DeliveryStatus).includes(filter) ||
+      String(o.WarehouseStatus).includes(filter)
     );
   }
 
@@ -461,9 +476,10 @@ function buildOrdersTable(list) {
         <td>${o.AssignedCourier || "—"}</td>
         <td>${o.DeliveryStatus || ""}</td>
         <td>
+          ${canEditWarehouse() ? `<button class="btn-purple" onclick="openWarehouse('${o.OrderID}')">საწყობი</button>` : ""}
           ${canAssignCourier() ? `<button class="btn-orange" onclick="openAssignCourier('${o.OrderID}')">კურიერი</button>` : ""}
-          ${canEditDelivery() ? `<button onclick="openStatus('${o.OrderID}')">სტატუსი</button>` : ""}
-          ${canCollectCOD() ? `<button onclick="openCOD('${o.OrderID}')">COD</button>` : ""}
+          ${canEditDelivery() ? `<button onclick="openStatus('${o.OrderID}')">მიწოდება</button>` : ""}
+          ${canCollectCOD() ? `<button class="btn-green" onclick="openCOD('${o.OrderID}')">COD</button>` : ""}
         </td>
       </tr>
     `;
@@ -477,7 +493,8 @@ function renderReservations() {
   const list = orders.filter(o =>
     String(o.PaymentStatus).includes("ნაწილობრივ") ||
     Number(o.RemainingAmount) > 0 ||
-    String(o.InternalStatus).includes("რეზერვ")
+    String(o.InternalStatus).includes("რეზერვ") ||
+    String(o.WarehouseStatus).includes("რეზერვ")
   );
 
   document.getElementById("reservationsTableWrap").innerHTML = simpleOrdersTable(list);
@@ -498,6 +515,7 @@ function simpleOrdersTable(list) {
           <th>ტელეფონი</th>
           <th>დარჩენილი</th>
           <th>გადახდა</th>
+          <th>საწყობი</th>
           <th>კურიერი</th>
           <th>მიწოდება</th>
           <th>კომენტარი</th>
@@ -514,6 +532,7 @@ function simpleOrdersTable(list) {
         <td>${o.Phone || ""}</td>
         <td>${o.RemainingAmount || 0}</td>
         <td>${paymentBadge(o.PaymentStatus)}</td>
+        <td>${o.WarehouseStatus || ""}</td>
         <td>${o.AssignedCourier || "—"}</td>
         <td>${o.DeliveryStatus || ""}</td>
         <td>${o.Comment || ""}</td>
@@ -655,6 +674,41 @@ function toggleEmployee(employeeId) {
   });
 }
 
+function openWarehouse(orderId) {
+  selectedOrder = orders.find(o => String(o.OrderID) === String(orderId));
+
+  document.getElementById("warehouseInfo").innerText =
+    "ორდერი: " + selectedOrder.OrderNumber + " | კლიენტი: " + selectedOrder.CustomerName;
+
+  document.getElementById("warehouseStatusSelect").value =
+    selectedOrder.WarehouseStatus || "საწყობშია";
+
+  document.getElementById("warehouseModal").style.display = "flex";
+}
+
+function confirmWarehouseStatus() {
+  const warehouseStatus = document.getElementById("warehouseStatusSelect").value;
+
+  fetch(API, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "updateWarehouseStatus",
+      orderId: selectedOrder.OrderID,
+      warehouseStatus: warehouseStatus,
+      changedBy: currentUser.Name
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      closeModal("warehouseModal");
+      loadAll();
+    } else {
+      alert(data.error || "შეცდომა");
+    }
+  });
+}
+
 function openAssignCourier(orderId) {
   selectedOrder = orders.find(o => String(o.OrderID) === String(orderId));
 
@@ -713,6 +767,10 @@ function paymentBadge(status) {
 function ledgerBadge(status) {
   if (String(status) === "CLOSED") return `<span class="badge closed">CLOSED</span>`;
   return `<span class="badge open">OPEN</span>`;
+}
+
+function canEditWarehouse() {
+  return String(permissions.CanEditWarehouse).toLowerCase() === "true";
 }
 
 function canEditDelivery() {
