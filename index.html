@@ -14,15 +14,38 @@
     .login-box h1 { margin: 0 0 10px; font-size: 28px; }
     .login-box p { color: #6b7280; margin-bottom: 22px; }
 
-    input, select { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 10px; margin-bottom: 12px; font-size: 15px; }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      font-size: 15px;
+      font-family: Arial, sans-serif;
+    }
 
-    button { border: 0; border-radius: 10px; padding: 10px 14px; cursor: pointer; background: #2563eb; color: white; font-weight: bold; margin: 2px; }
-    button:hover { background: #1d4ed8; }
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      background: #2563eb;
+      color: white;
+      font-weight: bold;
+      margin: 2px;
+    }
+
     .btn-gray { background: #6b7280; }
     .btn-red { background: #dc2626; }
     .btn-green { background: #16a34a; }
     .btn-orange { background: #f59e0b; }
     .btn-purple { background: #7c3aed; }
+    .btn-dark { background: #111827; }
 
     .error { color: #dc2626; margin-top: 10px; font-weight: bold; }
     .success { color: #16a34a; margin-top: 10px; font-weight: bold; }
@@ -50,7 +73,7 @@
     .form-grid { display: grid; grid-template-columns: repeat(5, minmax(140px, 1fr)); gap: 10px; align-items: center; }
     .form-grid input, .form-grid select { margin-bottom: 0; }
 
-    table { width: 100%; border-collapse: collapse; background: white; border-radius: 14px; overflow: hidden; min-width: 1150px; }
+    table { width: 100%; border-collapse: collapse; background: white; border-radius: 14px; overflow: hidden; min-width: 1250px; }
     th, td { padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: left; font-size: 14px; vertical-align: top; }
     th { background: #f9fafb; font-weight: bold; }
 
@@ -61,8 +84,16 @@
     .open { background: #dc2626; }
     .closed { background: #16a34a; }
 
+    .comment-preview {
+      max-width: 180px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #374151;
+    }
+
     .modal { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 99; }
-    .modal-box { width: 100%; max-width: 460px; background: white; border-radius: 16px; padding: 20px; }
+    .modal-box { width: 100%; max-width: 480px; background: white; border-radius: 16px; padding: 20px; }
     .modal-box h3 { margin-top: 0; }
     .hidden { display: none !important; }
 
@@ -73,6 +104,7 @@
       .cards { grid-template-columns: repeat(2, 1fr); }
       .form-grid { grid-template-columns: 1fr; }
     }
+
     @media (max-width: 520px) {
       .cards { grid-template-columns: 1fr; }
       .header h1 { font-size: 20px; }
@@ -135,6 +167,7 @@
             <option value="გადანახულია">გადანახულია</option>
           </select>
         </div>
+
         <div id="ordersTableWrap"></div>
       </section>
 
@@ -185,6 +218,16 @@
         <div id="employeesTableWrap"></div>
       </section>
     </main>
+  </div>
+</div>
+
+<div class="modal" id="commentModal">
+  <div class="modal-box">
+    <h3>📝 შეკვეთის კომენტარი</h3>
+    <p id="commentInfo"></p>
+    <textarea id="commentText" placeholder="ჩაწერე კომენტარი შეკვეთაზე"></textarea>
+    <button onclick="confirmComment()">შენახვა</button>
+    <button class="btn-gray" onclick="closeModal('commentModal')">დახურვა</button>
   </div>
 </div>
 
@@ -455,6 +498,7 @@ function buildOrdersTable(list) {
           <th>საწყობი</th>
           <th>კურიერი</th>
           <th>მიწოდება</th>
+          <th>კომენტარი</th>
           <th>მოქმედება</th>
         </tr>
       </thead>
@@ -475,7 +519,9 @@ function buildOrdersTable(list) {
         <td>${o.WarehouseStatus || ""}</td>
         <td>${o.AssignedCourier || "—"}</td>
         <td>${o.DeliveryStatus || ""}</td>
+        <td><div class="comment-preview">${o.Comment || "—"}</div></td>
         <td>
+          <button class="btn-dark" onclick="openComment('${o.OrderID}')">კომენტარი</button>
           ${canEditWarehouse() ? `<button class="btn-purple" onclick="openWarehouse('${o.OrderID}')">საწყობი</button>` : ""}
           ${canAssignCourier() ? `<button class="btn-orange" onclick="openAssignCourier('${o.OrderID}')">კურიერი</button>` : ""}
           ${canEditDelivery() ? `<button onclick="openStatus('${o.OrderID}')">მიწოდება</button>` : ""}
@@ -535,7 +581,7 @@ function simpleOrdersTable(list) {
         <td>${o.WarehouseStatus || ""}</td>
         <td>${o.AssignedCourier || "—"}</td>
         <td>${o.DeliveryStatus || ""}</td>
-        <td>${o.Comment || ""}</td>
+        <td>${o.Comment || "—"}</td>
       </tr>
     `;
   });
@@ -668,6 +714,39 @@ function toggleEmployee(employeeId) {
     if (data.success) {
       loadEmployees();
       loadCouriers();
+    } else {
+      alert(data.error || "შეცდომა");
+    }
+  });
+}
+
+function openComment(orderId) {
+  selectedOrder = orders.find(o => String(o.OrderID) === String(orderId));
+
+  document.getElementById("commentInfo").innerText =
+    "ორდერი: " + selectedOrder.OrderNumber + " | კლიენტი: " + selectedOrder.CustomerName;
+
+  document.getElementById("commentText").value = selectedOrder.Comment || "";
+  document.getElementById("commentModal").style.display = "flex";
+}
+
+function confirmComment() {
+  const comment = document.getElementById("commentText").value.trim();
+
+  fetch(API, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "updateComment",
+      orderId: selectedOrder.OrderID,
+      comment: comment,
+      changedBy: currentUser.Name
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      closeModal("commentModal");
+      loadAll();
     } else {
       alert(data.error || "შეცდომა");
     }
