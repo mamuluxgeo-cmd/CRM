@@ -6,9 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -34,15 +32,8 @@
       box-shadow: 0 15px 40px rgba(0,0,0,0.08);
     }
 
-    .login-box h1 {
-      margin: 0 0 10px;
-      font-size: 28px;
-    }
-
-    .login-box p {
-      color: #6b7280;
-      margin-bottom: 22px;
-    }
+    .login-box h1 { margin: 0 0 10px; font-size: 28px; }
+    .login-box p { color: #6b7280; margin-bottom: 22px; }
 
     input, select {
       width: 100%;
@@ -63,25 +54,16 @@
       font-weight: bold;
     }
 
-    button:hover {
-      background: #1d4ed8;
-    }
+    button:hover { background: #1d4ed8; }
 
-    .btn-danger {
-      background: #dc2626;
-    }
+    .btn-gray { background: #6b7280; }
+    .btn-gray:hover { background: #4b5563; }
 
-    .btn-danger:hover {
-      background: #b91c1c;
-    }
+    .btn-red { background: #dc2626; }
+    .btn-red:hover { background: #b91c1c; }
 
-    .btn-gray {
-      background: #6b7280;
-    }
-
-    .btn-gray:hover {
-      background: #4b5563;
-    }
+    .btn-green { background: #16a34a; }
+    .btn-green:hover { background: #15803d; }
 
     .error {
       color: #dc2626;
@@ -89,10 +71,13 @@
       font-weight: bold;
     }
 
-    .app {
-      display: none;
-      min-height: 100vh;
+    .success {
+      color: #16a34a;
+      margin-top: 10px;
+      font-weight: bold;
     }
+
+    .app { display: none; min-height: 100vh; }
 
     .header {
       background: #111827;
@@ -105,20 +90,10 @@
       flex-wrap: wrap;
     }
 
-    .header h1 {
-      margin: 0;
-      font-size: 24px;
-    }
+    .header h1 { margin: 0; font-size: 24px; }
+    .user-info { font-size: 14px; color: #e5e7eb; margin-bottom: 6px; }
 
-    .user-info {
-      font-size: 14px;
-      color: #e5e7eb;
-    }
-
-    .layout {
-      display: flex;
-      min-height: calc(100vh - 68px);
-    }
+    .layout { display: flex; min-height: calc(100vh - 68px); }
 
     .sidebar {
       width: 230px;
@@ -160,16 +135,8 @@
       box-shadow: 0 5px 20px rgba(0,0,0,0.04);
     }
 
-    .card .label {
-      color: #6b7280;
-      font-size: 13px;
-      margin-bottom: 8px;
-    }
-
-    .card .value {
-      font-size: 24px;
-      font-weight: bold;
-    }
+    .card .label { color: #6b7280; font-size: 13px; margin-bottom: 8px; }
+    .card .value { font-size: 24px; font-weight: bold; }
 
     .toolbar {
       display: flex;
@@ -181,6 +148,25 @@
 
     .toolbar input, .toolbar select {
       max-width: 240px;
+      margin-bottom: 0;
+    }
+
+    .form-card {
+      background: white;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 18px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.04);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(140px, 1fr));
+      gap: 10px;
+      align-items: center;
+    }
+
+    .form-grid input, .form-grid select {
       margin-bottom: 0;
     }
 
@@ -239,43 +225,25 @@
       padding: 20px;
     }
 
-    .modal-box h3 {
-      margin-top: 0;
-    }
-
-    .hidden {
-      display: none !important;
-    }
+    .modal-box h3 { margin-top: 0; }
+    .hidden { display: none !important; }
 
     @media (max-width: 900px) {
-      .layout {
-        flex-direction: column;
-      }
-
+      .layout { flex-direction: column; }
       .sidebar {
         width: 100%;
         display: flex;
         overflow-x: auto;
         gap: 8px;
       }
-
-      .nav-btn {
-        min-width: 150px;
-      }
-
-      .cards {
-        grid-template-columns: repeat(2, 1fr);
-      }
+      .nav-btn { min-width: 150px; }
+      .cards { grid-template-columns: repeat(2, 1fr); }
+      .form-grid { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 520px) {
-      .cards {
-        grid-template-columns: 1fr;
-      }
-
-      .header h1 {
-        font-size: 20px;
-      }
+      .cards { grid-template-columns: 1fr; }
+      .header h1 { font-size: 20px; }
     }
   </style>
 </head>
@@ -334,9 +302,7 @@
             <div class="value" id="courierMoney">0 ₾</div>
           </div>
         </div>
-      </section>
 
-      <section id="ordersPage">
         <div class="toolbar">
           <button onclick="loadAll()">🔄 განახლება</button>
           <input id="searchInput" placeholder="ძებნა კლიენტით ან ნომრით" oninput="renderOrders()">
@@ -349,7 +315,16 @@
             <option value="ჩაბარდა">ჩაბარდა</option>
           </select>
         </div>
+
         <div id="ordersTableWrap"></div>
+      </section>
+
+      <section id="ordersPage" class="hidden">
+        <div class="toolbar">
+          <button onclick="loadAll()">🔄 განახლება</button>
+          <input id="searchInput2" placeholder="ძებნა კლიენტით ან ნომრით" oninput="renderOrdersPage()">
+        </div>
+        <div id="ordersPageTableWrap"></div>
       </section>
 
       <section id="reservationsPage" class="hidden">
@@ -372,6 +347,24 @@
 
       <section id="employeesPage" class="hidden">
         <h2>თანამშრომლები</h2>
+
+        <div class="form-card">
+          <h3>➕ ახალი თანამშრომელი</h3>
+          <div class="form-grid">
+            <input id="newEmployeeName" placeholder="სახელი">
+            <input id="newEmployeePhone" placeholder="ტელეფონი / Login">
+            <input id="newEmployeePin" placeholder="PIN">
+            <select id="newEmployeeRole">
+              <option value="Manager">Manager</option>
+              <option value="Warehouse">Warehouse</option>
+              <option value="Courier">Courier</option>
+              <option value="Admin">Admin</option>
+            </select>
+            <button onclick="addEmployee()">დამატება</button>
+          </div>
+          <div id="employeeMessage"></div>
+        </div>
+
         <div id="employeesTableWrap"></div>
       </section>
     </main>
@@ -511,6 +504,7 @@ function showPage(page, btn) {
   document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
 
+  if (page === "orders") renderOrdersPage();
   if (page === "courierFinance") loadLedger();
   if (page === "employees") loadEmployees();
 }
@@ -522,6 +516,7 @@ function loadAll() {
       orders = data.orders || [];
       renderDashboard();
       renderOrders();
+      renderOrdersPage();
       renderReservations();
       renderDelivery();
     });
@@ -567,7 +562,7 @@ function renderDashboard() {
   document.getElementById("courierMoney").innerText = courierBalance + " ₾";
 }
 
-function getVisibleOrders() {
+function getVisibleOrders(searchId, filterId) {
   let result = [...orders];
 
   if (String(permissions.CanViewAllOrders).toLowerCase() !== "true") {
@@ -578,8 +573,8 @@ function getVisibleOrders() {
     }
   }
 
-  const search = document.getElementById("searchInput")?.value?.toLowerCase() || "";
-  const filter = document.getElementById("statusFilter")?.value || "";
+  const search = document.getElementById(searchId)?.value?.toLowerCase() || "";
+  const filter = document.getElementById(filterId)?.value || "";
 
   if (search) {
     result = result.filter(o =>
@@ -601,8 +596,16 @@ function getVisibleOrders() {
 }
 
 function renderOrders() {
-  const list = getVisibleOrders();
+  document.getElementById("ordersTableWrap").innerHTML =
+    buildOrdersTable(getVisibleOrders("searchInput", "statusFilter"));
+}
 
+function renderOrdersPage() {
+  document.getElementById("ordersPageTableWrap").innerHTML =
+    buildOrdersTable(getVisibleOrders("searchInput2", ""));
+}
+
+function buildOrdersTable(list) {
   let html = `
     <table>
       <thead>
@@ -645,7 +648,7 @@ function renderOrders() {
   });
 
   html += "</tbody></table>";
-  document.getElementById("ordersTableWrap").innerHTML = html;
+  return html;
 }
 
 function renderReservations() {
@@ -659,10 +662,7 @@ function renderReservations() {
 }
 
 function renderDelivery() {
-  const list = orders.filter(o =>
-    String(o.DeliveryStatus) !== "ჩაბარდა"
-  );
-
+  const list = orders.filter(o => String(o.DeliveryStatus) !== "ჩაბარდა");
   document.getElementById("deliveryTableWrap").innerHTML = simpleOrdersTable(list);
 }
 
@@ -752,19 +752,27 @@ function renderEmployees() {
           <th>ტელეფონი</th>
           <th>როლი</th>
           <th>აქტიური</th>
+          <th>მოქმედება</th>
         </tr>
       </thead>
       <tbody>
   `;
 
   employees.forEach(e => {
+    const active = String(e.Active).toLowerCase() === "true";
+
     html += `
       <tr>
         <td>${e.EmployeeID}</td>
         <td>${e.Name}</td>
         <td>${e.Phone}</td>
         <td>${e.Role}</td>
-        <td>${e.Active}</td>
+        <td>${active ? "აქტიური" : "გამორთული"}</td>
+        <td>
+          <button class="${active ? "btn-red" : "btn-green"}" onclick="toggleEmployee('${e.EmployeeID}')">
+            ${active ? "გამორთვა" : "ჩართვა"}
+          </button>
+        </td>
       </tr>
     `;
   });
@@ -773,17 +781,73 @@ function renderEmployees() {
   document.getElementById("employeesTableWrap").innerHTML = html;
 }
 
+function addEmployee() {
+  const name = document.getElementById("newEmployeeName").value.trim();
+  const phone = document.getElementById("newEmployeePhone").value.trim();
+  const pin = document.getElementById("newEmployeePin").value.trim();
+  const role = document.getElementById("newEmployeeRole").value;
+  const msg = document.getElementById("employeeMessage");
+
+  msg.className = "";
+  msg.innerText = "";
+
+  if (!name || !phone || !pin || !role) {
+    msg.className = "error";
+    msg.innerText = "ყველა ველი შეავსე";
+    return;
+  }
+
+  fetch(API, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "addEmployee",
+      name,
+      phone,
+      pin,
+      role
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      msg.className = "success";
+      msg.innerText = "თანამშრომელი დაემატა";
+
+      document.getElementById("newEmployeeName").value = "";
+      document.getElementById("newEmployeePhone").value = "";
+      document.getElementById("newEmployeePin").value = "";
+
+      loadEmployees();
+    } else {
+      msg.className = "error";
+      msg.innerText = data.error || "დამატება ვერ მოხერხდა";
+    }
+  });
+}
+
+function toggleEmployee(employeeId) {
+  fetch(API, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "toggleEmployee",
+      employeeId
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      loadEmployees();
+    } else {
+      alert(data.error || "შეცდომა");
+    }
+  });
+}
+
 function paymentBadge(status) {
   status = String(status || "");
 
-  if (status.includes("სრულად")) {
-    return `<span class="badge paid">Paid</span>`;
-  }
-
-  if (status.includes("ნაწილობრივ")) {
-    return `<span class="badge partial">Partial</span>`;
-  }
-
+  if (status.includes("სრულად")) return `<span class="badge paid">Paid</span>`;
+  if (status.includes("ნაწილობრივ")) return `<span class="badge partial">Partial</span>`;
   return `<span class="badge pending">Pending</span>`;
 }
 
