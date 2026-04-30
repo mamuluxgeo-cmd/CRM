@@ -35,9 +35,12 @@
     .paid{background:#16a34a}.partial{background:#f59e0b}.pending{background:#6b7280}.open{background:#dc2626}.closed{background:#16a34a}
     .comment-preview{max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#374151}
     .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:99}
-    .modal-box{width:100%;max-width:480px;background:white;border-radius:16px;padding:20px}
+    .modal-box{width:100%;max-width:760px;background:white;border-radius:16px;padding:20px;max-height:90vh;overflow:auto}
+    .detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+    .detail-box{background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:12px}
+    .detail-box span{display:block;color:#6b7280;font-size:12px;margin-bottom:4px}
     .hidden{display:none!important}
-    @media(max-width:900px){.layout{flex-direction:column}.sidebar{width:100%;display:flex;overflow-x:auto;gap:8px}.nav-btn{min-width:150px}.cards{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:1fr}}
+    @media(max-width:900px){.layout{flex-direction:column}.sidebar{width:100%;display:flex;overflow-x:auto;gap:8px}.nav-btn{min-width:150px}.cards{grid-template-columns:repeat(2,1fr)}.form-grid,.detail-grid{grid-template-columns:1fr}}
     @media(max-width:520px){.cards{grid-template-columns:1fr}.header h1{font-size:20px}}
   </style>
 </head>
@@ -124,7 +127,10 @@
       </section>
 
       <section id="ordersPage" class="hidden">
-        <div class="toolbar"><button onclick="loadAll()">🔄 განახლება</button><input id="searchInput2" placeholder="ძებნა" oninput="renderOrdersPage()"></div>
+        <div class="toolbar">
+          <button onclick="loadAll()">🔄 განახლება</button>
+          <input id="searchInput2" placeholder="ძებნა" oninput="renderOrdersPage()">
+        </div>
         <div id="ordersPageTableWrap"></div>
       </section>
 
@@ -154,6 +160,14 @@
         <div id="employeesTableWrap"></div>
       </section>
     </main>
+  </div>
+</div>
+
+<div class="modal" id="detailsModal">
+  <div class="modal-box">
+    <h3>📄 ორდერის დეტალები</h3>
+    <div id="detailsContent"></div>
+    <button class="btn-gray" onclick="closeModal('detailsModal')">დახურვა</button>
   </div>
 </div>
 
@@ -205,7 +219,46 @@ function renderDashboard(){totalOrders.innerText=orders.length;reservedOrders.in
 function getVisibleOrders(searchId,filterId){let res=[...orders];if(String(permissions.CanViewAllOrders).toLowerCase()!=="true"){res=currentUser.Role==="Courier"?res.filter(o=>String(o.AssignedCourier)===String(currentUser.Name)):res.filter(o=>String(o.AssignedEmployee)===String(currentUser.Name))}let s=document.getElementById(searchId)?.value?.toLowerCase()||"",f=document.getElementById(filterId)?.value||"";if(s)res=res.filter(o=>String(o.CustomerName).toLowerCase().includes(s)||String(o.OrderNumber).toLowerCase().includes(s)||String(o.Phone).toLowerCase().includes(s));if(f)res=res.filter(o=>String(o.PaymentStatus).includes(f)||String(o.InternalStatus).includes(f)||String(o.DeliveryStatus).includes(f)||String(o.WarehouseStatus).includes(f));return res}
 function renderOrders(){ordersTableWrap.innerHTML=buildOrdersTable(getVisibleOrders("searchInput","statusFilter"))}
 function renderOrdersPage(){ordersPageTableWrap.innerHTML=buildOrdersTable(getVisibleOrders("searchInput2",""))}
-function buildOrdersTable(list){let h=`<table><thead><tr><th>#</th><th>კლიენტი</th><th>ტელეფონი</th><th>მისამართი</th><th>თანხა</th><th>გადახდილი</th><th>დარჩენილი</th><th>გადახდა</th><th>საწყობი</th><th>კურიერი</th><th>მიწოდება</th><th>კომენტარი</th><th>მოქმედება</th></tr></thead><tbody>`;list.forEach(o=>{h+=`<tr><td>${o.OrderNumber||""}</td><td>${o.CustomerName||""}</td><td>${o.Phone||""}</td><td>${o.Address||""}</td><td>${o.TotalAmount||0}</td><td>${o.PaidAmount||0}</td><td>${o.RemainingAmount||0}</td><td>${paymentBadge(o.PaymentStatus)}</td><td>${o.WarehouseStatus||""}</td><td>${o.AssignedCourier||"—"}</td><td>${o.DeliveryStatus||""}</td><td><div class="comment-preview">${o.Comment||"—"}</div></td><td><button class="btn-dark" onclick="openComment('${o.OrderID}')">კომენტარი</button>${canEditWarehouse()?`<button class="btn-purple" onclick="openWarehouse('${o.OrderID}')">საწყობი</button>`:""}${canAssignCourier()?`<button class="btn-orange" onclick="openAssignCourier('${o.OrderID}')">კურიერი</button>`:""}${canEditDelivery()?`<button onclick="openStatus('${o.OrderID}')">მიწოდება</button>`:""}${canCollectCOD()?`<button class="btn-green" onclick="openCOD('${o.OrderID}')">COD</button>`:""}</td></tr>`});return h+"</tbody></table>"}
+
+function buildOrdersTable(list){let h=`<table><thead><tr><th>#</th><th>კლიენტი</th><th>ტელეფონი</th><th>მისამართი</th><th>თანხა</th><th>გადახდილი</th><th>დარჩენილი</th><th>გადახდა</th><th>საწყობი</th><th>კურიერი</th><th>მიწოდება</th><th>კომენტარი</th><th>მოქმედება</th></tr></thead><tbody>`;list.forEach(o=>{h+=`<tr><td>${o.OrderNumber||""}</td><td>${o.CustomerName||""}</td><td>${o.Phone||""}</td><td>${o.Address||""}</td><td>${o.TotalAmount||0}</td><td>${o.PaidAmount||0}</td><td>${o.RemainingAmount||0}</td><td>${paymentBadge(o.PaymentStatus)}</td><td>${o.WarehouseStatus||""}</td><td>${o.AssignedCourier||"—"}</td><td>${o.DeliveryStatus||""}</td><td><div class="comment-preview">${o.Comment||"—"}</div></td><td><button class="btn-gray" onclick="openDetails('${o.OrderID}')">დეტალები</button><button class="btn-dark" onclick="openComment('${o.OrderID}')">კომენტარი</button>${canEditWarehouse()?`<button class="btn-purple" onclick="openWarehouse('${o.OrderID}')">საწყობი</button>`:""}${canAssignCourier()?`<button class="btn-orange" onclick="openAssignCourier('${o.OrderID}')">კურიერი</button>`:""}${canEditDelivery()?`<button onclick="openStatus('${o.OrderID}')">მიწოდება</button>`:""}${canCollectCOD()?`<button class="btn-green" onclick="openCOD('${o.OrderID}')">COD</button>`:""}</td></tr>`});return h+"</tbody></table>"}
+
+function openDetails(orderId){
+  selectedOrder=orders.find(o=>String(o.OrderID)===String(orderId));
+  detailsContent.innerHTML="იტვირთება...";
+  detailsModal.style.display="flex";
+
+  fetch(API+"?action=getOrderItems&orderId="+encodeURIComponent(orderId))
+    .then(r=>r.json())
+    .then(d=>{
+      const items=d.items||[];
+      let itemsHtml=`<table style="min-width:700px"><thead><tr><th>პროდუქტი</th><th>ვარიანტი</th><th>SKU</th><th>რაოდ.</th><th>ფასი</th><th>სტატუსი</th></tr></thead><tbody>`;
+      items.forEach(i=>{
+        itemsHtml+=`<tr><td>${i.ProductName||""}</td><td>${i.Variant||""}</td><td>${i.SKU||""}</td><td>${i.Quantity||""}</td><td>${i.Price||""}</td><td>${i.ItemStatus||""}</td></tr>`;
+      });
+      itemsHtml+="</tbody></table>";
+
+      detailsContent.innerHTML=`
+        <div class="detail-grid">
+          <div class="detail-box"><span>ორდერი</span>${selectedOrder.OrderNumber||""}</div>
+          <div class="detail-box"><span>კლიენტი</span>${selectedOrder.CustomerName||""}</div>
+          <div class="detail-box"><span>ტელეფონი</span>${selectedOrder.Phone||""}</div>
+          <div class="detail-box"><span>მისამართი</span>${selectedOrder.Address||""}</div>
+          <div class="detail-box"><span>სრული თანხა</span>${selectedOrder.TotalAmount||0} ₾</div>
+          <div class="detail-box"><span>გადახდილი</span>${selectedOrder.PaidAmount||0} ₾</div>
+          <div class="detail-box"><span>დარჩენილი</span>${selectedOrder.RemainingAmount||0} ₾</div>
+          <div class="detail-box"><span>გადახდის სტატუსი</span>${selectedOrder.PaymentStatus||""}</div>
+          <div class="detail-box"><span>საწყობი</span>${selectedOrder.WarehouseStatus||""}</div>
+          <div class="detail-box"><span>კურიერი</span>${selectedOrder.AssignedCourier||"—"}</div>
+          <div class="detail-box"><span>მიწოდება</span>${selectedOrder.DeliveryStatus||""}</div>
+          <div class="detail-box"><span>შიდა სტატუსი</span>${selectedOrder.InternalStatus||""}</div>
+        </div>
+        <div class="detail-box"><span>კომენტარი</span>${selectedOrder.Comment||"—"}</div>
+        <h3>პროდუქტები</h3>
+        ${itemsHtml}
+      `;
+    });
+}
+
 function simpleOrdersTable(list){let h=`<table><thead><tr><th>#</th><th>კლიენტი</th><th>ტელეფონი</th><th>დარჩენილი</th><th>გადახდა</th><th>საწყობი</th><th>კურიერი</th><th>მიწოდება</th><th>კომენტარი</th></tr></thead><tbody>`;list.forEach(o=>h+=`<tr><td>${o.OrderNumber||""}</td><td>${o.CustomerName||""}</td><td>${o.Phone||""}</td><td>${o.RemainingAmount||0}</td><td>${paymentBadge(o.PaymentStatus)}</td><td>${o.WarehouseStatus||""}</td><td>${o.AssignedCourier||"—"}</td><td>${o.DeliveryStatus||""}</td><td>${o.Comment||"—"}</td></tr>`);return h+"</tbody></table>"}
 function renderReservations(){reservationsTableWrap.innerHTML=simpleOrdersTable(orders.filter(o=>String(o.PaymentStatus).includes("ნაწილობრივ")||Number(o.RemainingAmount)>0||String(o.InternalStatus).includes("რეზერვ")||String(o.WarehouseStatus).includes("რეზერვ")))}
 function renderDelivery(){deliveryTableWrap.innerHTML=simpleOrdersTable(orders.filter(o=>String(o.DeliveryStatus)!=="ჩაბარდა"))}
