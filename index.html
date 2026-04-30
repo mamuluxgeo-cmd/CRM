@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+  <meta charset="UTF-8">
+  <title>MAMU LUX CRM</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #f5f6fa;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    .top-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      padding: 10px 15px;
+      border: none;
+      background: #2f80ed;
+      color: white;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+
+    button:hover {
+      background: #1c60c7;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background: #f1f1f1;
+    }
+
+    .status {
+      padding: 5px 10px;
+      border-radius: 6px;
+      color: white;
+      font-size: 12px;
+    }
+
+    .paid { background: green; }
+    .partial { background: orange; }
+    .pending { background: gray; }
+
+    .modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 20px;
+      width: 400px;
+      border-radius: 10px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>📦 MAMU LUX CRM</h1>
+
+<div class="top-bar">
+  <button onclick="loadOrders()">🔄 განახლება</button>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>კლიენტი</th>
+      <th>ტელეფონი</th>
+      <th>თანხა</th>
+      <th>გადახდილი</th>
+      <th>დარჩენილი</th>
+      <th>სტატუსი</th>
+      <th>მიწოდება</th>
+      <th>მოქმედება</th>
+    </tr>
+  </thead>
+  <tbody id="ordersTable"></tbody>
+</table>
+
+<!-- COD Modal -->
+<div class="modal" id="codModal">
+  <div class="modal-content">
+    <h3>💰 თანხის აღება</h3>
+    <input type="number" id="codAmount" placeholder="შეიყვანე თანხა">
+    <br><br>
+    <button onclick="confirmCOD()">დადასტურება</button>
+    <button onclick="closeModal()">დახურვა</button>
+  </div>
+</div>
+
+<script>
+const API = "https://script.google.com/macros/s/AKfycbzFJ_HAj-IE5aJTlPyy7d3vdioWx6MQf4sj5AP7AuJhn8RCH6FZvmUoVF0526nORPvNxA/exec";
+
+let selectedOrder = null;
+
+function loadOrders() {
+  fetch(API + "?action=getOrders")
+    .then(res => res.json())
+    .then(data => {
+      const table = document.getElementById("ordersTable");
+      table.innerHTML = "";
+
+      data.forEach(order => {
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+          <td>${order.OrderNumber}</td>
+          <td>${order.CustomerName}</td>
+          <td>${order.Phone}</td>
+          <td>${order.TotalAmount}</td>
+          <td>${order.PaidAmount}</td>
+          <td>${order.RemainingAmount}</td>
+          <td>${paymentBadge(order.PaymentStatus)}</td>
+          <td>${order.DeliveryStatus}</td>
+          <td>
+            <button onclick="markDelivered('${order.OrderID}')">ჩაბარდა</button>
+            <button onclick="openCOD('${order.OrderID}')">COD</button>
+          </td>
+        `;
+
+        table.appendChild(tr);
+      });
+    });
+}
+
+function paymentBadge(status) {
+  if (status.includes("სრულად")) return '<span class="status paid">Paid</span>';
+  if (status.includes("ნაწილობრივ")) return '<span class="status partial">Partial</span>';
+  return '<span class="status pending">Pending</span>';
+}
+
+function markDelivered(orderId) {
+  fetch(API, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "updateStatus",
+      orderId: orderId,
+      deliveryStatus: "ჩაბარდა",
+      internalStatus: "დასრულებულია",
+      changedBy: "Courier"
+    })
+  }).then(() => {
+    alert("განახლდა");
+    loadOrders();
+  });
+}
+
+function openCOD(orderId) {
+  selectedOrder = orderId;
+  document.getElementById("codModal").style.display = "flex";
+}
+
+function closeModal() {
+  document.getElementById("codModal").style.display = "none";
+}
+
+function confirmCOD() {
+  const amount = document.getElementById("codAmount").value;
+
+  fetch(API, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "collectCOD",
+      orderId: selectedOrder,
+      collected: amount,
+      courier: "Courier"
+    })
+  }).then(() => {
+    alert("თანხა დაფიქსირდა");
+    closeModal();
+    loadOrders();
+  });
+}
+
+loadOrders();
+</script>
+
+</body>
+</html>
