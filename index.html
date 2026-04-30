@@ -74,8 +74,14 @@
   <div class="login-box">
     <h1>📦 MAMU LUX CRM</h1>
     <p>შედი თანამშრომლის ტელეფონით და PIN კოდით</p>
-    <input id="loginPhone" placeholder="ტელეფონი" value="admin">
-    <input id="loginPin" placeholder="PIN" type="password" value="1111">
+    <input id="loginPhone" placeholder="ტელეფონი" autocomplete="off">
+    <input id="loginPin" placeholder="PIN" type="password" autocomplete="off">
+
+    <label style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
+      <input id="rememberLogin" type="checkbox" style="width:auto;margin:0;">
+      დამახსოვრება
+    </label>
+
     <button onclick="login()">შესვლა</button>
     <div class="error" id="loginError"></div>
   </div>
@@ -224,7 +230,43 @@
 const API="https://script.google.com/macros/s/AKfycbzFJ_HAj-IE5aJTlPyy7d3vdioWx6MQf4sj5AP7AuJhn8RCH6FZvmUoVF0526nORPvNxA/exec";
 let currentUser=null,permissions=null,orders=[],ledger=[],employees=[],couriers=[],historyData=[],selectedOrder=null,selectedLedger=null;
 
-function login(){fetch(API,{method:"POST",body:JSON.stringify({action:"login",phone:loginPhone.value.trim(),pin:loginPin.value.trim()})}).then(r=>r.json()).then(d=>{if(!d.success){loginError.innerText=d.error||"შესვლა ვერ მოხერხდა";return}currentUser=d.employee;permissions=d.permissions;localStorage.setItem("crmUser",JSON.stringify(currentUser));localStorage.setItem("crmPermissions",JSON.stringify(permissions));startApp()}).catch(()=>loginError.innerText="API კავშირი ვერ მოხერხდა")}
+function login(){
+  const phone = loginPhone.value.trim();
+  const pin = loginPin.value.trim();
+
+  fetch(API,{
+    method:"POST",
+    body:JSON.stringify({
+      action:"login",
+      phone:phone,
+      pin:pin
+    })
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    if(!d.success){
+      loginError.innerText=d.error||"შესვლა ვერ მოხერხდა";
+      return;
+    }
+
+    currentUser=d.employee;
+    permissions=d.permissions;
+
+    localStorage.setItem("crmUser",JSON.stringify(currentUser));
+    localStorage.setItem("crmPermissions",JSON.stringify(permissions));
+
+    if(rememberLogin.checked){
+      localStorage.setItem("crmRememberPhone",phone);
+      localStorage.setItem("crmRememberPin",pin);
+    }else{
+      localStorage.removeItem("crmRememberPhone");
+      localStorage.removeItem("crmRememberPin");
+    }
+
+    startApp();
+  })
+  .catch(()=>loginError.innerText="API კავშირი ვერ მოხერხდა");
+}
 function startApp(){loginPage.style.display="none";app.style.display="block";userInfo.innerText=currentUser.Name+" / "+currentUser.Role;applyPermissions();loadAll()}
 function logout(){localStorage.removeItem("crmUser");localStorage.removeItem("crmPermissions");location.reload()}
 function applyPermissions(){if(String(permissions.CanCloseCourierMoney).toLowerCase()!=="true")financeNav.style.display="none";if(String(permissions.CanManageEmployees).toLowerCase()!=="true")employeesNav.style.display="none"}
@@ -441,7 +483,28 @@ function canCollectCOD(){return String(permissions.CanCollectCOD).toLowerCase()=
 function canAssignCourier(){return currentUser.Role==="Admin"||currentUser.Role==="Manager"}
 function closeModal(id){document.getElementById(id).style.display="none"}
 
-window.onload=function(){let u=localStorage.getItem("crmUser"),p=localStorage.getItem("crmPermissions");if(u&&p){currentUser=JSON.parse(u);permissions=JSON.parse(p);startApp()}};
+window.onload=function(){
+  const rememberedPhone = localStorage.getItem("crmRememberPhone");
+  const rememberedPin = localStorage.getItem("crmRememberPin");
+
+  if(rememberedPhone){
+    loginPhone.value = rememberedPhone;
+    rememberLogin.checked = true;
+  }
+
+  if(rememberedPin){
+    loginPin.value = rememberedPin;
+  }
+
+  let u=localStorage.getItem("crmUser");
+  let p=localStorage.getItem("crmPermissions");
+
+  if(u&&p){
+    currentUser=JSON.parse(u);
+    permissions=JSON.parse(p);
+    startApp();
+  }
+};
 </script>
 </body>
 </html>
