@@ -1,61 +1,242 @@
-<!-- მხოლოდ დამატებული ნაწილები გაჩვენებ რომ მარტივად ჩასვა -->
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+  <meta charset="UTF-8">
+  <title>MAMU LUX CRM</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,sans-serif;background:#f4f6fb;color:#111827}
+    .login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+    .login-box,.form-card,.card{background:#fff;border-radius:18px;padding:22px;box-shadow:0 10px 30px rgba(0,0,0,.06)}
+    .login-box{width:100%;max-width:420px}
+    input,select,textarea{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:10px;margin-bottom:12px;font-size:15px;font-family:Arial}
+    textarea{min-height:100px}
+    button{border:0;border-radius:10px;padding:10px 14px;cursor:pointer;background:#2563eb;color:white;font-weight:bold;margin:2px}
+    .btn-gray{background:#6b7280}.btn-red{background:#dc2626}.btn-green{background:#16a34a}.btn-orange{background:#f59e0b}.btn-purple{background:#7c3aed}.btn-dark{background:#111827}
+    .error{color:#dc2626;font-weight:bold}.success{color:#16a34a;font-weight:bold}
+    .app{display:none;min-height:100vh}
+    .header{background:#111827;color:white;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .header h1{margin:0;font-size:24px}.user-info{font-size:14px;color:#e5e7eb;margin-bottom:6px}
+    .layout{display:flex;min-height:calc(100vh - 68px)}
+    .sidebar{width:230px;background:white;border-right:1px solid #e5e7eb;padding:16px}
+    .nav-btn{width:100%;text-align:left;margin-bottom:8px;background:#f3f4f6;color:#111827}
+    .nav-btn.active{background:#2563eb;color:white}
+    .content{flex:1;padding:20px;overflow-x:auto}
+    .cards{display:grid;grid-template-columns:repeat(4,minmax(160px,1fr));gap:14px;margin-bottom:18px}
+    .card .label{color:#6b7280;font-size:13px;margin-bottom:8px}.card .value{font-size:24px;font-weight:bold}
+    .toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+    .toolbar input,.toolbar select{max-width:240px;margin-bottom:0}
+    .form-grid{display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:12px}
+    table{width:100%;border-collapse:collapse;background:white;border-radius:14px;overflow:hidden;min-width:1250px}
+    th,td{padding:12px;border-bottom:1px solid #e5e7eb;text-align:left;font-size:14px;vertical-align:top}
+    th{background:#f9fafb;font-weight:bold}
+    .badge{padding:5px 9px;border-radius:999px;font-size:12px;color:white;display:inline-block;font-weight:bold}
+    .paid{background:#16a34a}.partial{background:#f59e0b}.pending{background:#6b7280}.open{background:#dc2626}.closed{background:#16a34a}
+    .comment-preview{max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#374151}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:99}
+    .modal-box{width:100%;max-width:480px;background:white;border-radius:16px;padding:20px}
+    .hidden{display:none!important}
+    @media(max-width:900px){.layout{flex-direction:column}.sidebar{width:100%;display:flex;overflow-x:auto;gap:8px}.nav-btn{min-width:150px}.cards{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:1fr}}
+    @media(max-width:520px){.cards{grid-template-columns:1fr}.header h1{font-size:20px}}
+  </style>
+</head>
+<body>
 
-<!-- 1️⃣ Sidebar-ში დაამატე -->
-<button class="nav-btn" onclick="showPage('history', this)">History</button>
-
-<!-- 2️⃣ Content-ში დაამატე ახალი სექცია -->
-<section id="historyPage" class="hidden">
-  <h2>📜 ცვლილებების ისტორია</h2>
-  <div class="toolbar">
-    <button onclick="loadHistory()">🔄 განახლება</button>
+<div class="login-page" id="loginPage">
+  <div class="login-box">
+    <h1>📦 MAMU LUX CRM</h1>
+    <p>შედი თანამშრომლის ტელეფონით და PIN კოდით</p>
+    <input id="loginPhone" placeholder="ტელეფონი" value="admin">
+    <input id="loginPin" placeholder="PIN" type="password" value="1111">
+    <button onclick="login()">შესვლა</button>
+    <div class="error" id="loginError"></div>
   </div>
-  <div id="historyTableWrap"></div>
-</section>
+</div>
 
-<!-- 3️⃣ SCRIPT-ში დაამატე -->
+<div class="app" id="app">
+  <div class="header">
+    <h1>📦 MAMU LUX CRM</h1>
+    <div>
+      <div class="user-info" id="userInfo"></div>
+      <button class="btn-gray" onclick="logout()">გასვლა</button>
+    </div>
+  </div>
 
-let historyData = [];
+  <div class="layout">
+    <aside class="sidebar">
+      <button class="nav-btn active" onclick="showPage('dashboard', this)">Dashboard</button>
+      <button class="nav-btn" onclick="showPage('newOrder', this)">New Order</button>
+      <button class="nav-btn" onclick="showPage('orders', this)">Orders</button>
+      <button class="nav-btn" onclick="showPage('reservations', this)">Reservations</button>
+      <button class="nav-btn" onclick="showPage('delivery', this)">Delivery</button>
+      <button class="nav-btn" onclick="showPage('courierFinance', this)" id="financeNav">Courier Finance</button>
+      <button class="nav-btn" onclick="showPage('employees', this)" id="employeesNav">Employees</button>
+      <button class="nav-btn" onclick="showPage('history', this)">History</button>
+    </aside>
 
-function loadHistory() {
-  fetch(API + "?action=getStatusHistory")
-    .then(res => res.json())
-    .then(data => {
-      historyData = data.history || [];
-      renderHistory();
-    });
+    <main class="content">
+      <section id="dashboardPage">
+        <div class="cards">
+          <div class="card"><div class="label">ყველა შეკვეთა</div><div class="value" id="totalOrders">0</div></div>
+          <div class="card"><div class="label">რეზერვები</div><div class="value" id="reservedOrders">0</div></div>
+          <div class="card"><div class="label">დარჩენილი თანხა</div><div class="value" id="remainingMoney">0 ₾</div></div>
+          <div class="card"><div class="label">კურიერზე თანხა</div><div class="value" id="courierMoney">0 ₾</div></div>
+        </div>
+        <div class="toolbar">
+          <button onclick="loadAll()">🔄 განახლება</button>
+          <input id="searchInput" placeholder="ძებნა" oninput="renderOrders()">
+          <select id="statusFilter" onchange="renderOrders()">
+            <option value="">ყველა სტატუსი</option>
+            <option value="ნაწილობრივ">ნაწილობრივ</option>
+            <option value="სრულად">სრულად</option>
+            <option value="რეზერვ">რეზერვი</option>
+            <option value="ელოდება">ელოდება</option>
+            <option value="ჩაბარდა">ჩაბარდა</option>
+            <option value="საწყობშია">საწყობშია</option>
+            <option value="გადანახულია">გადანახულია</option>
+          </select>
+        </div>
+        <div id="ordersTableWrap"></div>
+      </section>
+
+      <section id="newOrderPage" class="hidden">
+        <div class="form-card">
+          <h2>➕ ახალი ორდერის რეგისტრაცია</h2>
+          <div class="form-grid">
+            <input id="newCustomerName" placeholder="კლიენტის სახელი / გვარი">
+            <input id="newPhone" placeholder="ტელეფონი">
+            <input id="newAddress" placeholder="მისამართი">
+            <input id="newProductName" placeholder="პროდუქტი / დასახელება">
+            <input id="newTotalAmount" type="number" placeholder="სრული თანხა">
+            <input id="newPaidAmount" type="number" placeholder="გადახდილი თანხა">
+            <select id="newWarehouseStatus">
+              <option value="საწყობშია">საწყობშია</option>
+              <option value="რეზერვირებულია">რეზერვირებულია</option>
+              <option value="გადანახულია">გადანახულია</option>
+              <option value="გასაცემად მზადაა">გასაცემად მზადაა</option>
+            </select>
+          </div>
+          <textarea id="newComment" placeholder="კომენტარი"></textarea>
+          <button onclick="addOrder()">ორდერის დამატება</button>
+          <div id="newOrderMessage"></div>
+        </div>
+      </section>
+
+      <section id="ordersPage" class="hidden">
+        <div class="toolbar"><button onclick="loadAll()">🔄 განახლება</button><input id="searchInput2" placeholder="ძებნა" oninput="renderOrdersPage()"></div>
+        <div id="ordersPageTableWrap"></div>
+      </section>
+
+      <section id="reservationsPage" class="hidden"><h2>რეზერვაციები</h2><div id="reservationsTableWrap"></div></section>
+      <section id="deliveryPage" class="hidden"><h2>მიწოდება</h2><div id="deliveryTableWrap"></div></section>
+      <section id="courierFinancePage" class="hidden"><h2>კურიერის ფინანსები</h2><div class="toolbar"><button onclick="loadLedger()">🔄 განახლება</button></div><div id="ledgerTableWrap"></div></section>
+      <section id="historyPage" class="hidden"><h2>📜 ისტორია</h2><div class="toolbar"><button onclick="loadHistory()">🔄 განახლება</button></div><div id="historyTableWrap"></div></section>
+
+      <section id="employeesPage" class="hidden">
+        <h2>თანამშრომლები</h2>
+        <div class="form-card">
+          <h3>➕ ახალი თანამშრომელი</h3>
+          <div class="form-grid">
+            <input id="newEmployeeName" placeholder="სახელი">
+            <input id="newEmployeePhone" placeholder="ტელეფონი / Login">
+            <input id="newEmployeePin" placeholder="PIN">
+            <select id="newEmployeeRole">
+              <option value="Manager">Manager</option>
+              <option value="Warehouse">Warehouse</option>
+              <option value="Courier">Courier</option>
+              <option value="Admin">Admin</option>
+            </select>
+          </div>
+          <button onclick="addEmployee()">დამატება</button>
+          <div id="employeeMessage"></div>
+        </div>
+        <div id="employeesTableWrap"></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<div class="modal" id="commentModal"><div class="modal-box"><h3>📝 კომენტარი</h3><p id="commentInfo"></p><textarea id="commentText"></textarea><button onclick="confirmComment()">შენახვა</button><button class="btn-gray" onclick="closeModal('commentModal')">დახურვა</button></div></div>
+<div class="modal" id="warehouseModal"><div class="modal-box"><h3>🏬 საწყობი</h3><p id="warehouseInfo"></p><select id="warehouseStatusSelect"><option value="საწყობშია">საწყობშია</option><option value="რეზერვირებულია">რეზერვირებულია</option><option value="გადანახულია">გადანახულია</option><option value="გასაცემად მზადაა">გასაცემად მზადაა</option><option value="გაცემულია">გაცემულია</option></select><button onclick="confirmWarehouseStatus()">შენახვა</button><button class="btn-gray" onclick="closeModal('warehouseModal')">დახურვა</button></div></div>
+<div class="modal" id="codModal"><div class="modal-box"><h3>💰 COD</h3><p id="codInfo"></p><input id="codAmount" type="number"><button onclick="confirmCOD()">დადასტურება</button><button class="btn-gray" onclick="closeModal('codModal')">დახურვა</button></div></div>
+<div class="modal" id="statusModal"><div class="modal-box"><h3>🚚 მიწოდება</h3><select id="deliveryStatusSelect"><option value="ელოდება">ელოდება</option><option value="კურიერზე გადაცემულია">კურიერზე გადაცემულია</option><option value="გზაშია">გზაშია</option><option value="მიტანილია">მიტანილია</option><option value="ჩაბარდა">ჩაბარდა</option><option value="ვერ ჩაბარდა">ვერ ჩაბარდა</option><option value="დაბრუნებულია">დაბრუნებულია</option></select><select id="internalStatusSelect"><option value="ახალი შეკვეთა">ახალი შეკვეთა</option><option value="რეზერვი">რეზერვი</option><option value="მზადაა მიწოდებისთვის">მზადაა მიწოდებისთვის</option><option value="მიწოდების პროცესშია">მიწოდების პროცესშია</option><option value="დასრულებულია">დასრულებულია</option><option value="პრობლემურია">პრობლემურია</option></select><button onclick="confirmStatus()">შენახვა</button><button class="btn-gray" onclick="closeModal('statusModal')">დახურვა</button></div></div>
+<div class="modal" id="assignCourierModal"><div class="modal-box"><h3>🚚 კურიერი</h3><p id="assignCourierInfo"></p><select id="courierSelect"></select><button onclick="confirmAssignCourier()">მიბმა</button><button class="btn-gray" onclick="closeModal('assignCourierModal')">დახურვა</button></div></div>
+<div class="modal" id="closeMoneyModal"><div class="modal-box"><h3>💼 თანხის ჩაბარება</h3><p id="closeMoneyInfo"></p><input id="submittedAmount" type="number"><button onclick="confirmCloseMoney()">დადასტურება</button><button class="btn-gray" onclick="closeModal('closeMoneyModal')">დახურვა</button></div></div>
+
+<script>
+const API="https://script.google.com/macros/s/AKfycbzFJ_HAj-IE5aJTlPyy7d3vdioWx6MQf4sj5AP7AuJhn8RCH6FZvmUoVF0526nORPvNxA/exec";
+let currentUser=null,permissions=null,orders=[],ledger=[],employees=[],couriers=[],historyData=[],selectedOrder=null,selectedLedger=null;
+
+function login(){fetch(API,{method:"POST",body:JSON.stringify({action:"login",phone:loginPhone.value.trim(),pin:loginPin.value.trim()})}).then(r=>r.json()).then(d=>{if(!d.success){loginError.innerText=d.error||"შესვლა ვერ მოხერხდა";return}currentUser=d.employee;permissions=d.permissions;localStorage.setItem("crmUser",JSON.stringify(currentUser));localStorage.setItem("crmPermissions",JSON.stringify(permissions));startApp()}).catch(()=>loginError.innerText="API კავშირი ვერ მოხერხდა")}
+function startApp(){loginPage.style.display="none";app.style.display="block";userInfo.innerText=currentUser.Name+" / "+currentUser.Role;applyPermissions();loadAll()}
+function logout(){localStorage.removeItem("crmUser");localStorage.removeItem("crmPermissions");location.reload()}
+function applyPermissions(){if(String(permissions.CanCloseCourierMoney).toLowerCase()!=="true")financeNav.style.display="none";if(String(permissions.CanManageEmployees).toLowerCase()!=="true")employeesNav.style.display="none"}
+function showPage(page,btn){["dashboardPage","newOrderPage","ordersPage","reservationsPage","deliveryPage","courierFinancePage","employeesPage","historyPage"].forEach(id=>document.getElementById(id).classList.add("hidden"));document.getElementById(page+"Page").classList.remove("hidden");document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");if(page==="orders")renderOrdersPage();if(page==="courierFinance")loadLedger();if(page==="employees")loadEmployees();if(page==="history")loadHistory()}
+function loadAll(){fetch(API+"?action=getOrders").then(r=>r.json()).then(d=>{orders=d.orders||[];renderDashboard();renderOrders();renderOrdersPage();renderReservations();renderDelivery()});loadLedger();loadCouriers()}
+function loadCouriers(){fetch(API+"?action=getCouriers").then(r=>r.json()).then(d=>couriers=d.couriers||[])}
+function loadLedger(){fetch(API+"?action=getCourierLedger").then(r=>r.json()).then(d=>{ledger=d.ledger||[];renderDashboard();renderLedger()})}
+function loadEmployees(){fetch(API+"?action=getEmployees").then(r=>r.json()).then(d=>{employees=d.employees||[];renderEmployees()})}
+function loadHistory(){fetch(API+"?action=getStatusHistory").then(r=>r.json()).then(d=>{historyData=d.history||[];renderHistory()})}
+
+function addOrder(){
+  const msg=document.getElementById("newOrderMessage");msg.className="";msg.innerText="";
+  fetch(API,{method:"POST",body:JSON.stringify({
+    action:"addOrder",
+    customerName:newCustomerName.value.trim(),
+    phone:newPhone.value.trim(),
+    address:newAddress.value.trim(),
+    productName:newProductName.value.trim(),
+    totalAmount:newTotalAmount.value,
+    paidAmount:newPaidAmount.value||0,
+    warehouseStatus:newWarehouseStatus.value,
+    comment:newComment.value.trim(),
+    createdBy:currentUser.Name
+  })}).then(r=>r.json()).then(d=>{
+    if(d.success){
+      msg.className="success";msg.innerText="ორდერი დაემატა: "+d.orderNumber;
+      ["newCustomerName","newPhone","newAddress","newProductName","newTotalAmount","newPaidAmount","newComment"].forEach(id=>document.getElementById(id).value="");
+      loadAll();
+    }else{msg.className="error";msg.innerText=d.error||"ორდერი ვერ დაემატა"}
+  })
 }
 
-function renderHistory() {
-  let html = `
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Order</th>
-          <th>ვინ</th>
-          <th>ველი</th>
-          <th>ძველი</th>
-          <th>ახალი</th>
-          <th>დრო</th>
-        </tr>
-      </thead>
-      <tbody>
-  `;
+function renderDashboard(){totalOrders.innerText=orders.length;reservedOrders.innerText=orders.filter(o=>String(o.InternalStatus).includes("რეზერვ")||String(o.WarehouseStatus).includes("რეზერვ")).length;remainingMoney.innerText=orders.reduce((s,o)=>s+(Number(o.RemainingAmount)||0),0)+" ₾";courierMoney.innerText=ledger.filter(l=>String(l.Status)==="OPEN").reduce((s,l)=>s+(Number(l.CourierBalance)||0),0)+" ₾"}
+function getVisibleOrders(searchId,filterId){let res=[...orders];if(String(permissions.CanViewAllOrders).toLowerCase()!=="true"){res=currentUser.Role==="Courier"?res.filter(o=>String(o.AssignedCourier)===String(currentUser.Name)):res.filter(o=>String(o.AssignedEmployee)===String(currentUser.Name))}let s=document.getElementById(searchId)?.value?.toLowerCase()||"",f=document.getElementById(filterId)?.value||"";if(s)res=res.filter(o=>String(o.CustomerName).toLowerCase().includes(s)||String(o.OrderNumber).toLowerCase().includes(s)||String(o.Phone).toLowerCase().includes(s));if(f)res=res.filter(o=>String(o.PaymentStatus).includes(f)||String(o.InternalStatus).includes(f)||String(o.DeliveryStatus).includes(f)||String(o.WarehouseStatus).includes(f));return res}
+function renderOrders(){ordersTableWrap.innerHTML=buildOrdersTable(getVisibleOrders("searchInput","statusFilter"))}
+function renderOrdersPage(){ordersPageTableWrap.innerHTML=buildOrdersTable(getVisibleOrders("searchInput2",""))}
+function buildOrdersTable(list){let h=`<table><thead><tr><th>#</th><th>კლიენტი</th><th>ტელეფონი</th><th>მისამართი</th><th>თანხა</th><th>გადახდილი</th><th>დარჩენილი</th><th>გადახდა</th><th>საწყობი</th><th>კურიერი</th><th>მიწოდება</th><th>კომენტარი</th><th>მოქმედება</th></tr></thead><tbody>`;list.forEach(o=>{h+=`<tr><td>${o.OrderNumber||""}</td><td>${o.CustomerName||""}</td><td>${o.Phone||""}</td><td>${o.Address||""}</td><td>${o.TotalAmount||0}</td><td>${o.PaidAmount||0}</td><td>${o.RemainingAmount||0}</td><td>${paymentBadge(o.PaymentStatus)}</td><td>${o.WarehouseStatus||""}</td><td>${o.AssignedCourier||"—"}</td><td>${o.DeliveryStatus||""}</td><td><div class="comment-preview">${o.Comment||"—"}</div></td><td><button class="btn-dark" onclick="openComment('${o.OrderID}')">კომენტარი</button>${canEditWarehouse()?`<button class="btn-purple" onclick="openWarehouse('${o.OrderID}')">საწყობი</button>`:""}${canAssignCourier()?`<button class="btn-orange" onclick="openAssignCourier('${o.OrderID}')">კურიერი</button>`:""}${canEditDelivery()?`<button onclick="openStatus('${o.OrderID}')">მიწოდება</button>`:""}${canCollectCOD()?`<button class="btn-green" onclick="openCOD('${o.OrderID}')">COD</button>`:""}</td></tr>`});return h+"</tbody></table>"}
+function simpleOrdersTable(list){let h=`<table><thead><tr><th>#</th><th>კლიენტი</th><th>ტელეფონი</th><th>დარჩენილი</th><th>გადახდა</th><th>საწყობი</th><th>კურიერი</th><th>მიწოდება</th><th>კომენტარი</th></tr></thead><tbody>`;list.forEach(o=>h+=`<tr><td>${o.OrderNumber||""}</td><td>${o.CustomerName||""}</td><td>${o.Phone||""}</td><td>${o.RemainingAmount||0}</td><td>${paymentBadge(o.PaymentStatus)}</td><td>${o.WarehouseStatus||""}</td><td>${o.AssignedCourier||"—"}</td><td>${o.DeliveryStatus||""}</td><td>${o.Comment||"—"}</td></tr>`);return h+"</tbody></table>"}
+function renderReservations(){reservationsTableWrap.innerHTML=simpleOrdersTable(orders.filter(o=>String(o.PaymentStatus).includes("ნაწილობრივ")||Number(o.RemainingAmount)>0||String(o.InternalStatus).includes("რეზერვ")||String(o.WarehouseStatus).includes("რეზერვ")))}
+function renderDelivery(){deliveryTableWrap.innerHTML=simpleOrdersTable(orders.filter(o=>String(o.DeliveryStatus)!=="ჩაბარდა"))}
+function renderLedger(){let h=`<table><thead><tr><th>Ledger ID</th><th>Order</th><th>კურიერი</th><th>ასაღები</th><th>აღებული</th><th>ჩაბარებული</th><th>ნაშთი</th><th>სტატუსი</th><th>მოქმედება</th></tr></thead><tbody>`;ledger.forEach(l=>h+=`<tr><td>${l.LedgerID}</td><td>${l.OrderNumber}</td><td>${l.CourierName}</td><td>${l.CODToCollect||0}</td><td>${l.CollectedAmount||0}</td><td>${l.SubmittedAmount||0}</td><td>${l.CourierBalance||0}</td><td>${ledgerBadge(l.Status)}</td><td>${String(l.Status)==="OPEN"?`<button onclick="openCloseMoney('${l.LedgerID}')">დახურვა</button>`:""}</td></tr>`);ledgerTableWrap.innerHTML=h+"</tbody></table>"}
+function renderEmployees(){let h=`<table><thead><tr><th>ID</th><th>სახელი</th><th>ტელეფონი</th><th>როლი</th><th>აქტიური</th><th>მოქმედება</th></tr></thead><tbody>`;employees.forEach(e=>{let a=String(e.Active).toLowerCase()==="true";h+=`<tr><td>${e.EmployeeID}</td><td>${e.Name}</td><td>${e.Phone}</td><td>${e.Role}</td><td>${a?"აქტიური":"გამორთული"}</td><td><button class="${a?"btn-red":"btn-green"}" onclick="toggleEmployee('${e.EmployeeID}')">${a?"გამორთვა":"ჩართვა"}</button></td></tr>`});employeesTableWrap.innerHTML=h+"</tbody></table>"}
+function renderHistory(){let h=`<table><thead><tr><th>LogID</th><th>OrderID</th><th>ვინ</th><th>ველი</th><th>ძველი</th><th>ახალი</th><th>დრო</th></tr></thead><tbody>`;historyData.forEach(x=>h+=`<tr><td>${x.LogID||""}</td><td>${x.OrderID||""}</td><td>${x.ChangedBy||""}</td><td>${x.Field||""}</td><td>${x.OldValue||""}</td><td>${x.NewValue||""}</td><td>${x.ChangedAt?new Date(x.ChangedAt).toLocaleString():""}</td></tr>`);historyTableWrap.innerHTML=h+"</tbody></table>"}
 
-  historyData.forEach(h => {
-    html += `
-      <tr>
-        <td>${h.LogID}</td>
-        <td>${h.OrderID}</td>
-        <td>${h.ChangedBy}</td>
-        <td>${h.Field}</td>
-        <td>${h.OldValue}</td>
-        <td>${h.NewValue}</td>
-        <td>${new Date(h.Timestamp).toLocaleString()}</td>
-      </tr>
-    `;
-  });
+function addEmployee(){let msg=employeeMessage;msg.className="";msg.innerText="";fetch(API,{method:"POST",body:JSON.stringify({action:"addEmployee",name:newEmployeeName.value.trim(),phone:newEmployeePhone.value.trim(),pin:newEmployeePin.value.trim(),role:newEmployeeRole.value})}).then(r=>r.json()).then(d=>{if(d.success){msg.className="success";msg.innerText="თანამშრომელი დაემატა";newEmployeeName.value="";newEmployeePhone.value="";newEmployeePin.value="";loadEmployees();loadCouriers()}else{msg.className="error";msg.innerText=d.error||"დამატება ვერ მოხერხდა"}})}
+function toggleEmployee(employeeId){fetch(API,{method:"POST",body:JSON.stringify({action:"toggleEmployee",employeeId})}).then(r=>r.json()).then(d=>{if(d.success){loadEmployees();loadCouriers()}else alert(d.error||"შეცდომა")})}
+function openComment(id){selectedOrder=orders.find(o=>String(o.OrderID)===String(id));commentInfo.innerText="ორდერი: "+selectedOrder.OrderNumber+" | კლიენტი: "+selectedOrder.CustomerName;commentText.value=selectedOrder.Comment||"";commentModal.style.display="flex"}
+function confirmComment(){fetch(API,{method:"POST",body:JSON.stringify({action:"updateComment",orderId:selectedOrder.OrderID,comment:commentText.value.trim(),changedBy:currentUser.Name})}).then(r=>r.json()).then(d=>{if(d.success){closeModal("commentModal");loadAll()}else alert(d.error||"შეცდომა")})}
+function openWarehouse(id){selectedOrder=orders.find(o=>String(o.OrderID)===String(id));warehouseInfo.innerText="ორდერი: "+selectedOrder.OrderNumber+" | კლიენტი: "+selectedOrder.CustomerName;warehouseStatusSelect.value=selectedOrder.WarehouseStatus||"საწყობშია";warehouseModal.style.display="flex"}
+function confirmWarehouseStatus(){fetch(API,{method:"POST",body:JSON.stringify({action:"updateWarehouseStatus",orderId:selectedOrder.OrderID,warehouseStatus:warehouseStatusSelect.value,changedBy:currentUser.Name})}).then(r=>r.json()).then(d=>{if(d.success){closeModal("warehouseModal");loadAll()}else alert(d.error||"შეცდომა")})}
+function openAssignCourier(id){selectedOrder=orders.find(o=>String(o.OrderID)===String(id));assignCourierInfo.innerText="ორდერი: "+selectedOrder.OrderNumber+" | კლიენტი: "+selectedOrder.CustomerName;courierSelect.innerHTML=couriers.length?couriers.map(c=>`<option value="${c.Name}">${c.Name} / ${c.Phone}</option>`).join(""):`<option value="">აქტიური კურიერი არ არის</option>`;assignCourierModal.style.display="flex"}
+function confirmAssignCourier(){if(!courierSelect.value){alert("აირჩიე კურიერი");return}fetch(API,{method:"POST",body:JSON.stringify({action:"assignCourier",orderId:selectedOrder.OrderID,courierName:courierSelect.value,changedBy:currentUser.Name})}).then(r=>r.json()).then(d=>{if(d.success){closeModal("assignCourierModal");loadAll()}else alert(d.error||"შეცდომა")})}
+function openStatus(id){selectedOrder=orders.find(o=>String(o.OrderID)===String(id));deliveryStatusSelect.value=selectedOrder.DeliveryStatus||"ელოდება";internalStatusSelect.value=selectedOrder.InternalStatus||"ახალი შეკვეთა";statusModal.style.display="flex"}
+function confirmStatus(){fetch(API,{method:"POST",body:JSON.stringify({action:"updateStatus",orderId:selectedOrder.OrderID,deliveryStatus:deliveryStatusSelect.value,internalStatus:internalStatusSelect.value,changedBy:currentUser.Name})}).then(r=>r.json()).then(d=>{if(d.success){closeModal("statusModal");loadAll()}else alert(d.error||"შეცდომა")})}
+function openCOD(id){selectedOrder=orders.find(o=>String(o.OrderID)===String(id));codInfo.innerText="ორდერი: "+selectedOrder.OrderNumber+" | დარჩენილი: "+selectedOrder.RemainingAmount+" ₾";codAmount.value=selectedOrder.RemainingAmount||"";codModal.style.display="flex"}
+function confirmCOD(){fetch(API,{method:"POST",body:JSON.stringify({action:"collectCOD",orderId:selectedOrder.OrderID,collected:codAmount.value,courier:currentUser.Name})}).then(r=>r.json()).then(d=>{if(d.success){closeModal("codModal");loadAll()}else alert(d.error||"შეცდომა")})}
+function openCloseMoney(id){selectedLedger=ledger.find(l=>String(l.LedgerID)===String(id));closeMoneyInfo.innerText="კურიერი: "+selectedLedger.CourierName+" | ნაშთი: "+selectedLedger.CourierBalance+" ₾";submittedAmount.value=selectedLedger.CourierBalance||"";closeMoneyModal.style.display="flex"}
+function confirmCloseMoney(){fetch(API,{method:"POST",body:JSON.stringify({action:"closeCourierMoney",ledgerId:selectedLedger.LedgerID,submittedAmount:submittedAmount.value})}).then(r=>r.json()).then(d=>{if(d.success){closeModal("closeMoneyModal");loadLedger()}else alert(d.error||"შეცდომა")})}
 
-  html += "</tbody></table>";
-  document.getElementById("historyTableWrap").innerHTML = html;
-}
+function paymentBadge(s){s=String(s||"");if(s.includes("სრულად"))return`<span class="badge paid">Paid</span>`;if(s.includes("ნაწილობრივ"))return`<span class="badge partial">Partial</span>`;return`<span class="badge pending">Pending</span>`}
+function ledgerBadge(s){return String(s)==="CLOSED"?`<span class="badge closed">CLOSED</span>`:`<span class="badge open">OPEN</span>`}
+function canEditWarehouse(){return String(permissions.CanEditWarehouse).toLowerCase()==="true"}
+function canEditDelivery(){return String(permissions.CanEditDelivery).toLowerCase()==="true"}
+function canCollectCOD(){return String(permissions.CanCollectCOD).toLowerCase()==="true"}
+function canAssignCourier(){return currentUser.Role==="Admin"||currentUser.Role==="Manager"}
+function closeModal(id){document.getElementById(id).style.display="none"}
+
+window.onload=function(){let u=localStorage.getItem("crmUser"),p=localStorage.getItem("crmPermissions");if(u&&p){currentUser=JSON.parse(u);permissions=JSON.parse(p);startApp()}};
+</script>
+</body>
+</html>
