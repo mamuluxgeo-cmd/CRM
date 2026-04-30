@@ -3,191 +3,838 @@
 <head>
   <meta charset="UTF-8">
   <title>MAMU LUX CRM</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial;
-      background: #f5f6fa;
       margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6fb;
+      color: #111827;
+    }
+
+    .login-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       padding: 20px;
     }
 
-    h1 {
-      margin-bottom: 20px;
+    .login-box {
+      width: 100%;
+      max-width: 420px;
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.08);
     }
 
-    .top-bar {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
+    .login-box h1 {
+      margin: 0 0 10px;
+      font-size: 28px;
+    }
+
+    .login-box p {
+      color: #6b7280;
+      margin-bottom: 22px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      font-size: 15px;
     }
 
     button {
-      padding: 10px 15px;
-      border: none;
-      background: #2f80ed;
-      color: white;
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 14px;
       cursor: pointer;
-      border-radius: 6px;
+      background: #2563eb;
+      color: white;
+      font-weight: bold;
     }
 
     button:hover {
-      background: #1c60c7;
+      background: #1d4ed8;
+    }
+
+    .btn-danger {
+      background: #dc2626;
+    }
+
+    .btn-danger:hover {
+      background: #b91c1c;
+    }
+
+    .btn-gray {
+      background: #6b7280;
+    }
+
+    .btn-gray:hover {
+      background: #4b5563;
+    }
+
+    .error {
+      color: #dc2626;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    .app {
+      display: none;
+      min-height: 100vh;
+    }
+
+    .header {
+      background: #111827;
+      color: white;
+      padding: 16px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .user-info {
+      font-size: 14px;
+      color: #e5e7eb;
+    }
+
+    .layout {
+      display: flex;
+      min-height: calc(100vh - 68px);
+    }
+
+    .sidebar {
+      width: 230px;
+      background: white;
+      border-right: 1px solid #e5e7eb;
+      padding: 16px;
+    }
+
+    .nav-btn {
+      width: 100%;
+      text-align: left;
+      margin-bottom: 8px;
+      background: #f3f4f6;
+      color: #111827;
+    }
+
+    .nav-btn.active {
+      background: #2563eb;
+      color: white;
+    }
+
+    .content {
+      flex: 1;
+      padding: 20px;
+      overflow-x: auto;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(160px, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.04);
+    }
+
+    .card .label {
+      color: #6b7280;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .card .value {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .toolbar input, .toolbar select {
+      max-width: 240px;
+      margin-bottom: 0;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
       background: white;
+      border-radius: 14px;
+      overflow: hidden;
+      min-width: 1000px;
     }
 
     th, td {
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
+      padding: 12px;
+      border-bottom: 1px solid #e5e7eb;
       text-align: left;
+      font-size: 14px;
     }
 
     th {
-      background: #f1f1f1;
+      background: #f9fafb;
+      font-weight: bold;
     }
 
-    .status {
-      padding: 5px 10px;
-      border-radius: 6px;
-      color: white;
+    .badge {
+      padding: 5px 9px;
+      border-radius: 999px;
       font-size: 12px;
+      color: white;
+      display: inline-block;
+      font-weight: bold;
     }
 
-    .paid { background: green; }
-    .partial { background: orange; }
-    .pending { background: gray; }
+    .paid { background: #16a34a; }
+    .partial { background: #f59e0b; }
+    .pending { background: #6b7280; }
+    .open { background: #dc2626; }
+    .closed { background: #16a34a; }
 
     .modal {
       position: fixed;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
+      inset: 0;
+      background: rgba(0,0,0,0.45);
       display: none;
-      justify-content: center;
       align-items: center;
-    }
-
-    .modal-content {
-      background: white;
+      justify-content: center;
       padding: 20px;
-      width: 400px;
-      border-radius: 10px;
+      z-index: 99;
     }
 
-    input {
+    .modal-box {
       width: 100%;
-      padding: 10px;
-      margin-top: 10px;
+      max-width: 440px;
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .modal-box h3 {
+      margin-top: 0;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        display: flex;
+        overflow-x: auto;
+        gap: 8px;
+      }
+
+      .nav-btn {
+        min-width: 150px;
+      }
+
+      .cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 520px) {
+      .cards {
+        grid-template-columns: 1fr;
+      }
+
+      .header h1 {
+        font-size: 20px;
+      }
     }
   </style>
 </head>
 
 <body>
 
-<h1>📦 MAMU LUX CRM</h1>
+<div class="login-page" id="loginPage">
+  <div class="login-box">
+    <h1>📦 MAMU LUX CRM</h1>
+    <p>შედი თანამშრომლის ტელეფონით და PIN კოდით</p>
 
-<div class="top-bar">
-  <button onclick="loadOrders()">🔄 განახლება</button>
+    <input id="loginPhone" placeholder="ტელეფონი" value="admin">
+    <input id="loginPin" placeholder="PIN" type="password" value="1111">
+
+    <button onclick="login()">შესვლა</button>
+    <div class="error" id="loginError"></div>
+  </div>
 </div>
 
-<table>
-  <thead>
-    <tr>
-      <th>#</th>
-      <th>კლიენტი</th>
-      <th>ტელეფონი</th>
-      <th>თანხა</th>
-      <th>გადახდილი</th>
-      <th>დარჩენილი</th>
-      <th>სტატუსი</th>
-      <th>მიწოდება</th>
-      <th>მოქმედება</th>
-    </tr>
-  </thead>
-  <tbody id="ordersTable"></tbody>
-</table>
+<div class="app" id="app">
+  <div class="header">
+    <h1>📦 MAMU LUX CRM</h1>
+    <div>
+      <div class="user-info" id="userInfo"></div>
+      <button class="btn-gray" onclick="logout()">გასვლა</button>
+    </div>
+  </div>
 
-<!-- COD Modal -->
+  <div class="layout">
+    <aside class="sidebar">
+      <button class="nav-btn active" onclick="showPage('dashboard', this)">Dashboard</button>
+      <button class="nav-btn" onclick="showPage('orders', this)">Orders</button>
+      <button class="nav-btn" onclick="showPage('reservations', this)">Reservations</button>
+      <button class="nav-btn" onclick="showPage('delivery', this)">Delivery</button>
+      <button class="nav-btn" onclick="showPage('courierFinance', this)" id="financeNav">Courier Finance</button>
+      <button class="nav-btn" onclick="showPage('employees', this)" id="employeesNav">Employees</button>
+    </aside>
+
+    <main class="content">
+      <section id="dashboardPage">
+        <div class="cards">
+          <div class="card">
+            <div class="label">ყველა შეკვეთა</div>
+            <div class="value" id="totalOrders">0</div>
+          </div>
+          <div class="card">
+            <div class="label">რეზერვები</div>
+            <div class="value" id="reservedOrders">0</div>
+          </div>
+          <div class="card">
+            <div class="label">დარჩენილი თანხა</div>
+            <div class="value" id="remainingMoney">0 ₾</div>
+          </div>
+          <div class="card">
+            <div class="label">კურიერზე თანხა</div>
+            <div class="value" id="courierMoney">0 ₾</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="ordersPage">
+        <div class="toolbar">
+          <button onclick="loadAll()">🔄 განახლება</button>
+          <input id="searchInput" placeholder="ძებნა კლიენტით ან ნომრით" oninput="renderOrders()">
+          <select id="statusFilter" onchange="renderOrders()">
+            <option value="">ყველა სტატუსი</option>
+            <option value="ნაწილობრივ">ნაწილობრივ გადახდილი</option>
+            <option value="სრულად">სრულად გადახდილი</option>
+            <option value="რეზერვ">რეზერვი</option>
+            <option value="ელოდება">ელოდება</option>
+            <option value="ჩაბარდა">ჩაბარდა</option>
+          </select>
+        </div>
+        <div id="ordersTableWrap"></div>
+      </section>
+
+      <section id="reservationsPage" class="hidden">
+        <h2>რეზერვაციები</h2>
+        <div id="reservationsTableWrap"></div>
+      </section>
+
+      <section id="deliveryPage" class="hidden">
+        <h2>მიწოდება</h2>
+        <div id="deliveryTableWrap"></div>
+      </section>
+
+      <section id="courierFinancePage" class="hidden">
+        <h2>კურიერის ფინანსები</h2>
+        <div class="toolbar">
+          <button onclick="loadLedger()">🔄 განახლება</button>
+        </div>
+        <div id="ledgerTableWrap"></div>
+      </section>
+
+      <section id="employeesPage" class="hidden">
+        <h2>თანამშრომლები</h2>
+        <div id="employeesTableWrap"></div>
+      </section>
+    </main>
+  </div>
+</div>
+
 <div class="modal" id="codModal">
-  <div class="modal-content">
-    <h3>💰 თანხის აღება</h3>
-    <input type="number" id="codAmount" placeholder="შეიყვანე თანხა">
-    <br><br>
+  <div class="modal-box">
+    <h3>💰 COD თანხის დაფიქსირება</h3>
+    <p id="codInfo"></p>
+    <input id="codAmount" type="number" placeholder="რამდენი აიღო კურიერმა">
     <button onclick="confirmCOD()">დადასტურება</button>
-    <button onclick="closeModal()">დახურვა</button>
+    <button class="btn-gray" onclick="closeModal('codModal')">დახურვა</button>
+  </div>
+</div>
+
+<div class="modal" id="statusModal">
+  <div class="modal-box">
+    <h3>🚚 სტატუსის შეცვლა</h3>
+    <select id="deliveryStatusSelect">
+      <option value="ელოდება">ელოდება</option>
+      <option value="კურიერზე გადაცემულია">კურიერზე გადაცემულია</option>
+      <option value="გზაშია">გზაშია</option>
+      <option value="მიტანილია">მიტანილია</option>
+      <option value="ჩაბარდა">ჩაბარდა</option>
+      <option value="ვერ ჩაბარდა">ვერ ჩაბარდა</option>
+      <option value="დაბრუნებულია">დაბრუნებულია</option>
+    </select>
+
+    <select id="internalStatusSelect">
+      <option value="ახალი შეკვეთა">ახალი შეკვეთა</option>
+      <option value="რეზერვი">რეზერვი</option>
+      <option value="მზადაა მიწოდებისთვის">მზადაა მიწოდებისთვის</option>
+      <option value="მიწოდების პროცესშია">მიწოდების პროცესშია</option>
+      <option value="დასრულებულია">დასრულებულია</option>
+      <option value="პრობლემურია">პრობლემურია</option>
+    </select>
+
+    <button onclick="confirmStatus()">შენახვა</button>
+    <button class="btn-gray" onclick="closeModal('statusModal')">დახურვა</button>
+  </div>
+</div>
+
+<div class="modal" id="closeMoneyModal">
+  <div class="modal-box">
+    <h3>💼 თანხის ჩაბარება</h3>
+    <p id="closeMoneyInfo"></p>
+    <input id="submittedAmount" type="number" placeholder="რამდენი ჩააბარა">
+    <button onclick="confirmCloseMoney()">დადასტურება</button>
+    <button class="btn-gray" onclick="closeModal('closeMoneyModal')">დახურვა</button>
   </div>
 </div>
 
 <script>
 const API = "https://script.google.com/macros/s/AKfycbzFJ_HAj-IE5aJTlPyy7d3vdioWx6MQf4sj5AP7AuJhn8RCH6FZvmUoVF0526nORPvNxA/exec";
 
+let currentUser = null;
+let permissions = null;
+let orders = [];
+let ledger = [];
+let employees = [];
 let selectedOrder = null;
+let selectedLedger = null;
 
-function loadOrders() {
+function login() {
+  const phone = document.getElementById("loginPhone").value.trim();
+  const pin = document.getElementById("loginPin").value.trim();
+
+  fetch(API, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "login",
+      phone: phone,
+      pin: pin
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (!data.success) {
+      document.getElementById("loginError").innerText = data.error || "შესვლა ვერ მოხერხდა";
+      return;
+    }
+
+    currentUser = data.employee;
+    permissions = data.permissions;
+
+    localStorage.setItem("crmUser", JSON.stringify(currentUser));
+    localStorage.setItem("crmPermissions", JSON.stringify(permissions));
+
+    startApp();
+  })
+  .catch(() => {
+    document.getElementById("loginError").innerText = "API კავშირი ვერ მოხერხდა";
+  });
+}
+
+function startApp() {
+  document.getElementById("loginPage").style.display = "none";
+  document.getElementById("app").style.display = "block";
+
+  document.getElementById("userInfo").innerText =
+    currentUser.Name + " / " + currentUser.Role;
+
+  applyPermissions();
+  loadAll();
+}
+
+function logout() {
+  localStorage.removeItem("crmUser");
+  localStorage.removeItem("crmPermissions");
+  location.reload();
+}
+
+function applyPermissions() {
+  if (String(permissions.CanCloseCourierMoney).toLowerCase() !== "true") {
+    document.getElementById("financeNav").style.display = "none";
+  }
+
+  if (String(permissions.CanManageEmployees).toLowerCase() !== "true") {
+    document.getElementById("employeesNav").style.display = "none";
+  }
+}
+
+function showPage(page, btn) {
+  const pages = [
+    "dashboardPage",
+    "ordersPage",
+    "reservationsPage",
+    "deliveryPage",
+    "courierFinancePage",
+    "employeesPage"
+  ];
+
+  pages.forEach(id => document.getElementById(id).classList.add("hidden"));
+  document.getElementById(page + "Page").classList.remove("hidden");
+
+  document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+
+  if (page === "courierFinance") loadLedger();
+  if (page === "employees") loadEmployees();
+}
+
+function loadAll() {
   fetch(API + "?action=getOrders")
     .then(res => res.json())
     .then(data => {
-      const table = document.getElementById("ordersTable");
-      table.innerHTML = "";
+      orders = data.orders || [];
+      renderDashboard();
+      renderOrders();
+      renderReservations();
+      renderDelivery();
+    });
 
-      data.forEach(order => {
-        const tr = document.createElement("tr");
+  loadLedger();
+}
 
-        tr.innerHTML = `
-          <td>${order.OrderNumber}</td>
-          <td>${order.CustomerName}</td>
-          <td>${order.Phone}</td>
-          <td>${order.TotalAmount}</td>
-          <td>${order.PaidAmount}</td>
-          <td>${order.RemainingAmount}</td>
-          <td>${paymentBadge(order.PaymentStatus)}</td>
-          <td>${order.DeliveryStatus}</td>
-          <td>
-            <button onclick="markDelivered('${order.OrderID}')">ჩაბარდა</button>
-            <button onclick="openCOD('${order.OrderID}')">COD</button>
-          </td>
-        `;
-
-        table.appendChild(tr);
-      });
+function loadLedger() {
+  fetch(API + "?action=getCourierLedger")
+    .then(res => res.json())
+    .then(data => {
+      ledger = data.ledger || [];
+      renderDashboard();
+      renderLedger();
     });
 }
 
-function paymentBadge(status) {
-  if (status.includes("სრულად")) return '<span class="status paid">Paid</span>';
-  if (status.includes("ნაწილობრივ")) return '<span class="status partial">Partial</span>';
-  return '<span class="status pending">Pending</span>';
+function loadEmployees() {
+  fetch(API + "?action=getEmployees")
+    .then(res => res.json())
+    .then(data => {
+      employees = data.employees || [];
+      renderEmployees();
+    });
 }
 
-function markDelivered(orderId) {
+function renderDashboard() {
+  const total = orders.length;
+  const reserved = orders.filter(o =>
+    String(o.InternalStatus).includes("რეზერვ") ||
+    String(o.WarehouseStatus).includes("რეზერვ")
+  ).length;
+
+  const remaining = orders.reduce((sum, o) => sum + (Number(o.RemainingAmount) || 0), 0);
+
+  const courierBalance = ledger
+    .filter(l => String(l.Status) === "OPEN")
+    .reduce((sum, l) => sum + (Number(l.CourierBalance) || 0), 0);
+
+  document.getElementById("totalOrders").innerText = total;
+  document.getElementById("reservedOrders").innerText = reserved;
+  document.getElementById("remainingMoney").innerText = remaining + " ₾";
+  document.getElementById("courierMoney").innerText = courierBalance + " ₾";
+}
+
+function getVisibleOrders() {
+  let result = [...orders];
+
+  if (String(permissions.CanViewAllOrders).toLowerCase() !== "true") {
+    if (currentUser.Role === "Courier") {
+      result = result.filter(o => String(o.AssignedCourier) === String(currentUser.Name));
+    } else {
+      result = result.filter(o => String(o.AssignedEmployee) === String(currentUser.Name));
+    }
+  }
+
+  const search = document.getElementById("searchInput")?.value?.toLowerCase() || "";
+  const filter = document.getElementById("statusFilter")?.value || "";
+
+  if (search) {
+    result = result.filter(o =>
+      String(o.CustomerName).toLowerCase().includes(search) ||
+      String(o.OrderNumber).toLowerCase().includes(search) ||
+      String(o.Phone).toLowerCase().includes(search)
+    );
+  }
+
+  if (filter) {
+    result = result.filter(o =>
+      String(o.PaymentStatus).includes(filter) ||
+      String(o.InternalStatus).includes(filter) ||
+      String(o.DeliveryStatus).includes(filter)
+    );
+  }
+
+  return result;
+}
+
+function renderOrders() {
+  const list = getVisibleOrders();
+
+  let html = `
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>კლიენტი</th>
+          <th>ტელეფონი</th>
+          <th>მისამართი</th>
+          <th>თანხა</th>
+          <th>გადახდილი</th>
+          <th>დარჩენილი</th>
+          <th>გადახდა</th>
+          <th>საწყობი</th>
+          <th>მიწოდება</th>
+          <th>მოქმედება</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  list.forEach(o => {
+    html += `
+      <tr>
+        <td>${o.OrderNumber || ""}</td>
+        <td>${o.CustomerName || ""}</td>
+        <td>${o.Phone || ""}</td>
+        <td>${o.Address || ""}</td>
+        <td>${o.TotalAmount || 0}</td>
+        <td>${o.PaidAmount || 0}</td>
+        <td>${o.RemainingAmount || 0}</td>
+        <td>${paymentBadge(o.PaymentStatus)}</td>
+        <td>${o.WarehouseStatus || ""}</td>
+        <td>${o.DeliveryStatus || ""}</td>
+        <td>
+          ${canEditDelivery() ? `<button onclick="openStatus('${o.OrderID}')">სტატუსი</button>` : ""}
+          ${canCollectCOD() ? `<button onclick="openCOD('${o.OrderID}')">COD</button>` : ""}
+        </td>
+      </tr>
+    `;
+  });
+
+  html += "</tbody></table>";
+  document.getElementById("ordersTableWrap").innerHTML = html;
+}
+
+function renderReservations() {
+  const list = orders.filter(o =>
+    String(o.PaymentStatus).includes("ნაწილობრივ") ||
+    Number(o.RemainingAmount) > 0 ||
+    String(o.InternalStatus).includes("რეზერვ")
+  );
+
+  document.getElementById("reservationsTableWrap").innerHTML = simpleOrdersTable(list);
+}
+
+function renderDelivery() {
+  const list = orders.filter(o =>
+    String(o.DeliveryStatus) !== "ჩაბარდა"
+  );
+
+  document.getElementById("deliveryTableWrap").innerHTML = simpleOrdersTable(list);
+}
+
+function simpleOrdersTable(list) {
+  let html = `
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>კლიენტი</th>
+          <th>ტელეფონი</th>
+          <th>დარჩენილი</th>
+          <th>გადახდა</th>
+          <th>მიწოდება</th>
+          <th>კომენტარი</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  list.forEach(o => {
+    html += `
+      <tr>
+        <td>${o.OrderNumber || ""}</td>
+        <td>${o.CustomerName || ""}</td>
+        <td>${o.Phone || ""}</td>
+        <td>${o.RemainingAmount || 0}</td>
+        <td>${paymentBadge(o.PaymentStatus)}</td>
+        <td>${o.DeliveryStatus || ""}</td>
+        <td>${o.Comment || ""}</td>
+      </tr>
+    `;
+  });
+
+  html += "</tbody></table>";
+  return html;
+}
+
+function renderLedger() {
+  let html = `
+    <table>
+      <thead>
+        <tr>
+          <th>Ledger ID</th>
+          <th>Order</th>
+          <th>კურიერი</th>
+          <th>ასაღები</th>
+          <th>აღებული</th>
+          <th>ჩაბარებული</th>
+          <th>ნაშთი</th>
+          <th>სტატუსი</th>
+          <th>მოქმედება</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  ledger.forEach(l => {
+    html += `
+      <tr>
+        <td>${l.LedgerID}</td>
+        <td>${l.OrderNumber}</td>
+        <td>${l.CourierName}</td>
+        <td>${l.CODToCollect || 0}</td>
+        <td>${l.CollectedAmount || 0}</td>
+        <td>${l.SubmittedAmount || 0}</td>
+        <td>${l.CourierBalance || 0}</td>
+        <td>${ledgerBadge(l.Status)}</td>
+        <td>
+          ${String(l.Status) === "OPEN" ? `<button onclick="openCloseMoney('${l.LedgerID}')">დახურვა</button>` : ""}
+        </td>
+      </tr>
+    `;
+  });
+
+  html += "</tbody></table>";
+  document.getElementById("ledgerTableWrap").innerHTML = html;
+}
+
+function renderEmployees() {
+  let html = `
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>სახელი</th>
+          <th>ტელეფონი</th>
+          <th>როლი</th>
+          <th>აქტიური</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  employees.forEach(e => {
+    html += `
+      <tr>
+        <td>${e.EmployeeID}</td>
+        <td>${e.Name}</td>
+        <td>${e.Phone}</td>
+        <td>${e.Role}</td>
+        <td>${e.Active}</td>
+      </tr>
+    `;
+  });
+
+  html += "</tbody></table>";
+  document.getElementById("employeesTableWrap").innerHTML = html;
+}
+
+function paymentBadge(status) {
+  status = String(status || "");
+
+  if (status.includes("სრულად")) {
+    return `<span class="badge paid">Paid</span>`;
+  }
+
+  if (status.includes("ნაწილობრივ")) {
+    return `<span class="badge partial">Partial</span>`;
+  }
+
+  return `<span class="badge pending">Pending</span>`;
+}
+
+function ledgerBadge(status) {
+  if (String(status) === "CLOSED") return `<span class="badge closed">CLOSED</span>`;
+  return `<span class="badge open">OPEN</span>`;
+}
+
+function canEditDelivery() {
+  return String(permissions.CanEditDelivery).toLowerCase() === "true";
+}
+
+function canCollectCOD() {
+  return String(permissions.CanCollectCOD).toLowerCase() === "true";
+}
+
+function openStatus(orderId) {
+  selectedOrder = orders.find(o => String(o.OrderID) === String(orderId));
+  document.getElementById("deliveryStatusSelect").value = selectedOrder.DeliveryStatus || "ელოდება";
+  document.getElementById("internalStatusSelect").value = selectedOrder.InternalStatus || "ახალი შეკვეთა";
+  document.getElementById("statusModal").style.display = "flex";
+}
+
+function confirmStatus() {
   fetch(API, {
     method: "POST",
     body: JSON.stringify({
       action: "updateStatus",
-      orderId: orderId,
-      deliveryStatus: "ჩაბარდა",
-      internalStatus: "დასრულებულია",
-      changedBy: "Courier"
+      orderId: selectedOrder.OrderID,
+      deliveryStatus: document.getElementById("deliveryStatusSelect").value,
+      internalStatus: document.getElementById("internalStatusSelect").value,
+      changedBy: currentUser.Name
     })
-  }).then(() => {
-    alert("განახლდა");
-    loadOrders();
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      closeModal("statusModal");
+      loadAll();
+    } else {
+      alert(data.error || "შეცდომა");
+    }
   });
 }
 
 function openCOD(orderId) {
-  selectedOrder = orderId;
+  selectedOrder = orders.find(o => String(o.OrderID) === String(orderId));
+  document.getElementById("codInfo").innerText =
+    "ორდერი: " + selectedOrder.OrderNumber + " | დარჩენილი: " + selectedOrder.RemainingAmount + " ₾";
+  document.getElementById("codAmount").value = selectedOrder.RemainingAmount || "";
   document.getElementById("codModal").style.display = "flex";
-}
-
-function closeModal() {
-  document.getElementById("codModal").style.display = "none";
 }
 
 function confirmCOD() {
@@ -197,18 +844,64 @@ function confirmCOD() {
     method: "POST",
     body: JSON.stringify({
       action: "collectCOD",
-      orderId: selectedOrder,
+      orderId: selectedOrder.OrderID,
       collected: amount,
-      courier: "Courier"
+      courier: currentUser.Name
     })
-  }).then(() => {
-    alert("თანხა დაფიქსირდა");
-    closeModal();
-    loadOrders();
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      closeModal("codModal");
+      loadAll();
+    } else {
+      alert(data.error || "შეცდომა");
+    }
   });
 }
 
-loadOrders();
+function openCloseMoney(ledgerId) {
+  selectedLedger = ledger.find(l => String(l.LedgerID) === String(ledgerId));
+  document.getElementById("closeMoneyInfo").innerText =
+    "კურიერი: " + selectedLedger.CourierName + " | ნაშთი: " + selectedLedger.CourierBalance + " ₾";
+  document.getElementById("submittedAmount").value = selectedLedger.CourierBalance || "";
+  document.getElementById("closeMoneyModal").style.display = "flex";
+}
+
+function confirmCloseMoney() {
+  fetch(API, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "closeCourierMoney",
+      ledgerId: selectedLedger.LedgerID,
+      submittedAmount: document.getElementById("submittedAmount").value
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      closeModal("closeMoneyModal");
+      loadLedger();
+    } else {
+      alert(data.error || "შეცდომა");
+    }
+  });
+}
+
+function closeModal(id) {
+  document.getElementById(id).style.display = "none";
+}
+
+window.onload = function () {
+  const savedUser = localStorage.getItem("crmUser");
+  const savedPermissions = localStorage.getItem("crmPermissions");
+
+  if (savedUser && savedPermissions) {
+    currentUser = JSON.parse(savedUser);
+    permissions = JSON.parse(savedPermissions);
+    startApp();
+  }
+};
 </script>
 
 </body>
